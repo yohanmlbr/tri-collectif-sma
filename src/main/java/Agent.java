@@ -84,7 +84,12 @@ public class Agent {
 
         //do drop?
         if(!this.carriedObjectLabel.equals("0") && this.onCaseObjectLabel.equals("0")){
-            f=calculateObjectProp(true);
+            if(Constante.UEAM){
+                f=calculateObjectPropUEAM(true);
+            }
+            else{
+                f=calculateObjectProp(true);
+            }
             proba=Math.pow(f/(Constante.K_MINUS+f),2);
             if(proba>rand){
                 e.drop(this);
@@ -94,7 +99,12 @@ public class Agent {
         }
         //do carry?
         else if(this.carriedObjectLabel.equals("0") && !this.onCaseObjectLabel.equals("0")){
-            f=calculateObjectProp(false);
+            if(Constante.UEAM){
+                f=calculateObjectPropUEAM(false);
+            }
+            else{
+                f=calculateObjectProp(false);
+            }
             proba=Math.pow(Constante.K_PLUS/(Constante.K_PLUS+f),2);
             if(proba>rand){
                 e.carry(this);
@@ -122,10 +132,12 @@ public class Agent {
         double nbSameObject = 0;
         double nbTotal = 0;
         String object;
-        if(doDrop)
+        if(doDrop) {
             object=this.carriedObjectLabel;
-        else
+        }
+        else{
             object=onCaseObjectLabel;
+        }
         for (Direction d : this.directionCaseLabel.keySet()) {
             if (this.directionCaseLabel.get(d).equals(object)) {
                 nbSameObject++;
@@ -133,6 +145,39 @@ public class Agent {
             nbTotal++;
         }
         return nbSameObject / nbTotal;
+    }
+
+    /**
+     * Calcul la proportion d'objets en utilisant la mémoire de l'agent et utilisant le taux d'erreur de reconnaissance d'objets
+     * @param doDrop boolean sélectionnant la méthode de calcul pour un ramassage ou un dépôt d'objet
+     * @return la proportion d'objet calculé avec le taux d'erreur de reconnaissance des objets
+     */
+    private double calculateObjectPropUEAM(boolean doDrop){
+        int nbA=0,nbB=0,nbTotal=0;
+        for(int i=0;i<this.memory.length();i++){
+            if(String.valueOf(this.memory.charAt(i)).equals("A")){
+                nbA++;
+            }
+            else if(String.valueOf(this.memory.charAt(i)).equals("B")){
+                nbB++;
+            }
+            nbTotal++;
+        }
+
+        String object;
+        if(doDrop){
+            object=this.carriedObjectLabel;
+        }
+        else{
+            object=onCaseObjectLabel;
+        }
+
+        if(object.equals("A")) {
+            return ((nbA+(nbB*Constante.ERROR_RATE))/nbTotal);
+        }
+        else {
+            return ((nbB+(nbA*Constante.ERROR_RATE))/nbTotal);
+        }
     }
 
     @Override

@@ -25,7 +25,6 @@ public class Case {
             label="   ";
         else
             label=" "+objectLabel+" ";
-        //return (this.agent != null) ? label+".": label+" ";
         return (this.agent != null) ? this.agent.toString() : label;
     }
 }
